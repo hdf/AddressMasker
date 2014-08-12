@@ -159,8 +159,7 @@ namespace BeaEngineCS
 
     private static string GetSectName(IMAGE_SECTION_HEADER s)
     {
-      //stooopid
-      return s.Name0.ToString() + s.Name1 + s.Name2 + s.Name3 + s.Name4 + s.Name5;
+      return s.Name0.ToString() + s.Name1 + s.Name2 + s.Name3 + s.Name4 + s.Name5; // stooopid
     }
 
     public static uint[] RvaToOffset(uint rva)
@@ -179,9 +178,9 @@ namespace BeaEngineCS
         uint vMax = vBase + vSize;
 
         if (rva >= vBase && rva < vMax)
-        { //right section
+        {
           sectionName = GetSectName(c);
-          return new uint[] { rva - vBase + c.PointerToRawData, c.SizeOfRawData };
+          return new uint[] { rva - vBase + c.PointerToRawData, c.PointerToRawData, c.SizeOfRawData };
         }
       }
       return new uint[] { };

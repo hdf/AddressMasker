@@ -21,7 +21,7 @@ namespace Tests
     private static void doStuff(ref byte[] bytes)
     {
       uint[] rva = masker.GetRVA(ref bytes);
-      if (rva.Length < 1)
+      if (rva.Length < 3)
         return;
       int[] locs = masker.GetAddressMaskLocs(ref bytes, rva);
 

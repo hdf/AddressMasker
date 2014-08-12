@@ -21,7 +21,6 @@ namespace BeaEngineCS
         s.Seek(s.Position + 1, SeekOrigin.Begin);
       for (int i = 0; i < PeHeader.section.Length; i++)
         PeHeader.section[i] = PeHeader.ReadStruct<PeHeader.IMAGE_SECTION_HEADER>(s);
-
       return PeHeader.RvaToOffset(ntHeader.OptionalHeader.AddressOfEntryPoint);
     }
 
@@ -32,22 +31,28 @@ namespace BeaEngineCS
 
     public static int[] GetAddressMaskLocs(ref byte[] bytes, uint[] rva)
     {
-      if (rva.Length < 2)
+      if (rva.Length < 3)
         return new int[] { };
       UnmanagedBuffer buffer = new UnmanagedBuffer(ref bytes);
 
       BeaEngine._Disasm disasm = new BeaEngine._Disasm();
       ulong begin = (ulong)buffer.Ptr.ToInt64();
-      ulong end = begin + (ulong)(rva[0] + rva[1]);
-      disasm.InstructionPointer = (UIntPtr)(begin + rva[0]);
+      ulong end = begin + (ulong)(rva[1] + rva[2]);
+      disasm.InstructionPointer = (UIntPtr)(begin + rva[1]);
       int result, off, n;
 
       List<int> locs = new List<int>();
       while (disasm.InstructionPointer.ToUInt64() < end)
       {
         result = BeaEngine.Disassemble(ref disasm, true);
-        if (result < 1) // (result == BeaEngine.UnknownOpcode || result == BeaEngine.OutOfBlock)
+        if (result == BeaEngine.UnknownOpcode) // This is not good practice, but not sure, what else I can do
+        {
+          Console.WriteLine("UnknownOpcode (" + bytes[(int)(disasm.InstructionPointer.ToUInt64() - begin)].ToString("X2") + ") at: " + (disasm.InstructionPointer.ToUInt64() - begin).ToString() + " skipping 1 byte.");
+          result = 1;
+        }
+        if (result == BeaEngine.OutOfBlock)
           break;
+        //if (result < 5) // Does not contain address
         if (result > 4) // Mask addresses
         {
           off = result % 4;
